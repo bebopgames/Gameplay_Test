@@ -14,6 +14,15 @@ struct Skyscraper final
 	float height;
 };
 
+struct Boid final
+{
+	Vector3 position;
+	Vector3 velocity;
+	float cruiseSpeed;
+	float wanderPhase;
+	size_t flockIndex;
+};
+
 class City
 {
 
@@ -28,7 +37,12 @@ public:
 
 private:
     void Load();
+	Vector3 CalculateObstacleAvoidance( const Boid& boid ) const;
+	void ResolveBuildingCollision( Boid& boid ) const;
+	void KeepBoidInFlightArea( Boid& boid ) const;
 
 	std::vector< Skyscraper > m_skyscrapers;
+	std::vector< Boid > m_boids;
+	PrimitivePtr m_boidShape;
 };
 
