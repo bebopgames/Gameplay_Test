@@ -10,11 +10,12 @@
 namespace
 {
 	constexpr float PICKUP_SIZE = 1.0f;
-	constexpr float ROTATION_SPEED_Y = 3.5f;
+	constexpr float ROTATION_SPEED_Z = 3.5f;
 }
 
-Pickup_Speed::Pickup_Speed( const Vector3& position ) :
-	Pickup( position, PICKUP_SIZE * 0.5f )
+Pickup_Speed::Pickup_Speed( const Vector3& position, float lifetime ) :
+	Pickup( position, PICKUP_SIZE * 0.5f ),
+	m_lifetime( lifetime )
 {
 	m_shape = GetEngine().CreateTetrahedronPrimitive( PICKUP_SIZE );
 }
@@ -28,13 +29,13 @@ void Pickup_Speed::OnUpdate( float deltaTime, FlockManager& flockManager )
 	if ( timeStep <= 0.0f || !m_isActive ) return;
 
 	m_lifetime -= timeStep;
-	m_rotationY += ROTATION_SPEED_Y * timeStep;
+	m_rotationZ += ROTATION_SPEED_Z * timeStep;
 	if ( m_lifetime <= 0.0f ) m_isActive = false;
 }
 
 void Pickup_Speed::OnRender( cdp_framework::RenderContextPtr& renderContext )
 {
-	renderContext->RenderPrimitive( m_shape, Vector3::One, m_position, Vector3( 0.0f, m_rotationY, 0.0f ), Colors::Green );
+	renderContext->RenderPrimitive( m_shape, Vector3::One, m_position, Vector3( 0.0f, 0.0f, m_rotationZ ), Colors::Green );
 }
 
 void Pickup_Speed::OnActivated( FlockManager& flockManager )

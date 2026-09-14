@@ -1,0 +1,18 @@
+{
+  // Default values are shown beside every adjustable setting.
+  "pickup": {
+    "spawnIntervalMinSeconds": 10.0, // Default: 10.0 seconds
+    "spawnIntervalMaxSeconds": 20.0, // Default: 20.0 seconds
+    "lifetimeSeconds": 6.0 // Default: 6.0 seconds
+  },
+  "flock": {
+    "count": 4, // Default: 4 flocks
+    "minimumSize": 5, // Default: 5 boids per flock
+    "maximumSize": 12, // Default: 12 boids per flock
+    "boidSize": 0.70, // Default: 0.70 world-unit radius
+    "boidVelocity": 4.875, // Default: 4.875 world units per second (average cruise speed)
+    "cohesion": 0.15, // Default: 0.15
+    "alignment": 0.55, // Default: 0.55
+    "separation": 3.5 // Default: 3.5
+  }
+}

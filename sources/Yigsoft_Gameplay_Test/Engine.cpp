@@ -342,6 +342,11 @@ namespace cdp_framework
 		return DirectX::GeometricPrimitive::CreateTetrahedron( m_deviceResources->GetD3DDeviceContext(), size );
 	}
 
+	std::unique_ptr< DirectX::GeometricPrimitive > Engine::CreateCylinderPrimitive( const float height, const float diameter )
+	{
+		return DirectX::GeometricPrimitive::CreateCylinder( m_deviceResources->GetD3DDeviceContext(), height, diameter );
+	}
+
 	void Engine::RenderPrimitive( const PrimitivePtr& primitive, const DirectX::SimpleMath::Vector3& scale, const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Vector3& rotation, const FXMVECTOR& color )
 	{
 		XMVECTOR orientation = Quaternion::CreateFromYawPitchRoll( rotation.x, rotation.y, rotation.z );

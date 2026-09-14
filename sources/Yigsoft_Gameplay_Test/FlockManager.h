@@ -19,6 +19,7 @@ public:
 	void OnShutdown();
 	bool FindClosestYellowBall( const Vector3& position, Vector3& outPosition ) const;
 	bool ConsumeYellowBall( const Vector3& position, float consumeDistance );
+	int ConsumeYellowBallsWithin( const Vector3& position, float consumeDistance );
 	void ScatterYellowBalls( const Vector3& threatPosition, float scatterDistance );
 	void AddToNearestFlock( const Vector3& position, const Vector3& velocity );
 	void BounceProjectileOffBuildings( Vector3& position, Vector3& velocity, float radius ) const;
@@ -31,6 +32,8 @@ public:
 	size_t flockNumber = 4;
 	int minimumFlockSize = 5;
 	int maximumFlockSize = 12;
+	float boidSize = 0.70f;
+	float boidVelocity = 4.875f;
 	float cohesion = 0.15f;
 	float alignment = 0.55f;
 	float closeRangeSeparation = 3.5f;

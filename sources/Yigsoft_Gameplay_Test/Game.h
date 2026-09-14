@@ -11,8 +11,10 @@
 #include "Crosshair.h"
 #include "FlockManager.h"
 #include "Projectile_Primary.h"
+#include "Projectile_Secondary.h"
 #include "Pickup_Freeze.h"
 #include "Pickup_Speed.h"
+#include "Pickup_Missiles.h"
 
 class Game final : public cdp_framework::IGame
 {
@@ -33,6 +35,8 @@ public:
 
 private:
 	int m_score = 0;
+	int m_secondaryProjectileAmmo = 0;
+	void LoadSettings();
 	void UpdatePickup( float deltaTime );
 	void SetPrimaryProjectileSpeedMultiplier( float multiplier );
 	void RestartGame();
@@ -42,9 +46,13 @@ private:
 	std::unique_ptr< FlockManager >						m_flockManager;
 	std::vector< std::unique_ptr< Projectile > >				m_projectiles;
 	bool												m_leftMouseWasDown = false;
+	bool m_rightMouseWasDown = false;
 	std::unique_ptr< Pickup > m_pickup;
 	float m_pickupSpawnTimer = 0.0f;
 	float m_pickupSpawnDelay = 0.0f;
+	float m_pickupSpawnIntervalMinimum = 10.0f;
+	float m_pickupSpawnIntervalMaximum = 20.0f;
+	float m_pickupLifetime = 6.0f;
 	float m_primaryProjectileSpeedMultiplier = 1.0f;
 	float m_speedBoostRemaining = 0.0f;
 	float m_gameTimeRemaining = 120.0f;

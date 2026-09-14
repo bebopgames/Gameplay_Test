@@ -8,7 +8,7 @@
 class Pickup_Freeze final : public Pickup
 {
 public:
-	Pickup_Freeze( const Vector3& position );
+	Pickup_Freeze( const Vector3& position, float lifetime );
 	virtual ~Pickup_Freeze() override;
 
 	void OnUpdate( float deltaTime, FlockManager& flockManager ) override;

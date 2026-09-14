@@ -10,7 +10,8 @@ class FlockManager;
 enum class PickupEffect
 {
 	None,
-	Speed
+	Speed,
+	Missiles
 };
 
 class Pickup

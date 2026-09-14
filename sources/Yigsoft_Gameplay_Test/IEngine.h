@@ -27,6 +27,7 @@ namespace cdp_framework
 		virtual PrimitivePtr CreateBoxPrimitive( const Vector3& dimensions ) = 0;
 		virtual PrimitivePtr CreateSpherePrimitive( const float radius ) = 0;
 		virtual PrimitivePtr CreateTetrahedronPrimitive( const float size ) = 0;
+		virtual PrimitivePtr CreateCylinderPrimitive( const float height, const float diameter ) = 0;
 		virtual void RenderPrimitive ( const PrimitivePtr& primitive, const Vector3& scale, const Vector3& position,
 									   const Vector3& rotation, const FXMVECTOR& color = Colors::White ) = 0;
         // *********************** Primitives ***********************

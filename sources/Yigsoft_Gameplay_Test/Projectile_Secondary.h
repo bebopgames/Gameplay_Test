@@ -16,12 +16,6 @@ public:
 
 private:
 	bool HasImpactedWorld( const FlockManager& flockManager ) const;
-	void BeginImpact( FlockManager& flockManager );
 
-	PrimitivePtr m_cubeShape;
-	PrimitivePtr m_pulseShape;
-	Vector3 m_rotation = Vector3::Zero;
-	Vector3 m_impactPosition = Vector3::Zero;
-	float m_pulseElapsed = 0.0f;
-	bool m_hasImpacted = false;
+	PrimitivePtr m_shape;
 };

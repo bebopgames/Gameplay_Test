@@ -9,11 +9,8 @@
 
 namespace
 {
-	constexpr float BOID_RADIUS = 0.70f;
 	constexpr float NEIGHBOUR_RADIUS = 8.0f;
 	constexpr float SEPARATION_RADIUS = 2.25f;
-	constexpr float MIN_SPEED = 3.0f;
-	constexpr float MAX_SPEED = 6.5f;
 	constexpr float MIN_XZ = -21.0f;
 	constexpr float MAX_XZ = 21.0f;
 	constexpr float MIN_Y = 2.0f;
@@ -55,7 +52,7 @@ FlockManager::~FlockManager() = default;
 void FlockManager::OnInitialize()
 {
 	OnShutdown();
-	m_boidShape = GetEngine().CreateSpherePrimitive( BOID_RADIUS );
+	m_boidShape = GetEngine().CreateSpherePrimitive( boidSize );
 
 	const float flockX[] = { -12.0f, 12.0f, -4.0f };
 	const float flockZ[] = { -12.0f, -4.0f, 12.0f };
@@ -75,7 +72,7 @@ void FlockManager::OnInitialize()
 			boid.position = Vector3( flockX[ spawnIndex ] + RandomRange( -2.0f, 2.0f ), flockY[ spawnIndex ] + RandomRange( -2.0f, 2.0f ), flockZ[ spawnIndex ] + RandomRange( -2.0f, 2.0f ) );
 			boid.velocity = Vector3( RandomRange( -1.0f, 1.0f ), RandomRange( -0.25f, 0.25f ), RandomRange( -1.0f, 1.0f ) );
 			boid.velocity.Normalize();
-			boid.cruiseSpeed = RandomRange( 4.25f, 5.5f );
+			boid.cruiseSpeed = RandomRange( std::max( 0.1f, boidVelocity - 0.625f ), boidVelocity + 0.625f );
 			boid.wanderPhase = static_cast< float >( boidIndex ) * 0.63f + static_cast< float >( flockIndex ) * 1.97f;
 			boid.velocity *= boid.cruiseSpeed;
 			m_boids.push_back( boid );
@@ -87,6 +84,8 @@ void FlockManager::OnUpdate( float deltaTime )
 {
 	const float timeStep = std::min( deltaTime, 0.05f );
 	if ( timeStep <= 0.0f ) return;
+	const float minimumSpeed = std::max( 0.1f, boidVelocity - 1.875f );
+	const float maximumSpeed = std::max( minimumSpeed + 0.1f, boidVelocity + 1.625f );
 	for ( Boid& boid : m_boids )
 	{
 		boid.freezeRemaining = std::max( 0.0f, boid.freezeRemaining - timeStep );
@@ -133,8 +132,8 @@ void FlockManager::OnUpdate( float deltaTime )
 		boid.wanderPhase += timeStep * ( 0.65f + static_cast< float >( boid.flockIndex ) * 0.08f );
 		const float speed = boid.velocity.Length();
 		const float desiredSpeed = boid.cruiseSpeed + sinf( boid.wanderPhase );
-		if ( speed < MIN_SPEED ) boid.velocity = speed > 0.0001f ? boid.velocity * ( MIN_SPEED / speed ) : Vector3::UnitZ * MIN_SPEED;
-		else if ( speed > MAX_SPEED ) boid.velocity *= MAX_SPEED / speed;
+		if ( speed < minimumSpeed ) boid.velocity = speed > 0.0001f ? boid.velocity * ( minimumSpeed / speed ) : Vector3::UnitZ * minimumSpeed;
+		else if ( speed > maximumSpeed ) boid.velocity *= maximumSpeed / speed;
 		else boid.velocity *= ( speed + ( desiredSpeed - speed ) * timeStep * 0.8f ) / speed;
 		boid.position += boid.velocity * timeStep;
 		ResolveBuildingCollision( boid );
@@ -221,7 +220,7 @@ void FlockManager::AddToNearestFlock( const Vector3& position, const Vector3& ve
 	yellowBall.velocity = velocity;
 	if ( yellowBall.velocity.LengthSquared() > 0.0001f ) yellowBall.velocity.Normalize();
 	else yellowBall.velocity = Vector3::UnitZ;
-	yellowBall.cruiseSpeed = 4.75f;
+	yellowBall.cruiseSpeed = boidVelocity;
 	yellowBall.velocity *= yellowBall.cruiseSpeed;
 	yellowBall.wanderPhase = RandomRange( 0.0f, 6.28f );
 
@@ -290,9 +289,20 @@ bool FlockManager::IntersectsBuilding( const Vector3& position, float radius ) c
 	return false;
 }
 
+int FlockManager::ConsumeYellowBallsWithin( const Vector3& position, float consumeDistance )
+{
+	const float consumeDistanceSquared = consumeDistance * consumeDistance;
+	const size_t countBefore = m_boids.size();
+	m_boids.erase( std::remove_if( m_boids.begin(), m_boids.end(), [&]( const Boid& boid )
+	{
+		return ( boid.position - position ).LengthSquared() <= consumeDistanceSquared;
+	} ), m_boids.end() );
+	return static_cast< int >( countBefore - m_boids.size() );
+}
+
 bool FlockManager::HasBoidWithin( const Vector3& position, float radius ) const
 {
-	const float maximumDistanceSquared = ( radius + BOID_RADIUS ) * ( radius + BOID_RADIUS );
+	const float maximumDistanceSquared = ( radius + boidSize ) * ( radius + boidSize );
 	for ( const Boid& boid : m_boids )
 	{
 		if ( ( boid.position - position ).LengthSquared() <= maximumDistanceSquared ) return true;
@@ -315,7 +325,7 @@ Vector3 FlockManager::CalculateObstacleAvoidance( const Boid& boid ) const
 	Vector3 direction = boid.velocity;
 	if ( direction.LengthSquared() > 0.0001f ) direction.Normalize();
 	const Vector3 futurePosition = boid.position + direction * 3.0f;
-	const float avoidanceDistance = 2.0f + BOID_RADIUS;
+	const float avoidanceDistance = 2.0f + boidSize;
 	for ( const Skyscraper& skyscraper : m_city.GetSkyscrapers() )
 	{
 		const Vector3 halfSize( skyscraper.width * 0.5f, skyscraper.height * 0.5f, skyscraper.length * 0.5f );
@@ -340,7 +350,7 @@ void FlockManager::ResolveBuildingCollision( Boid& boid ) const
 {
 	for ( const Skyscraper& skyscraper : m_city.GetSkyscrapers() )
 	{
-		const Vector3 halfSize( skyscraper.width * 0.5f + BOID_RADIUS, skyscraper.height * 0.5f + BOID_RADIUS, skyscraper.length * 0.5f + BOID_RADIUS );
+		const Vector3 halfSize( skyscraper.width * 0.5f + boidSize, skyscraper.height * 0.5f + boidSize, skyscraper.length * 0.5f + boidSize );
 		const Vector3 minimum = skyscraper.position - halfSize;
 		const Vector3 maximum = skyscraper.position + halfSize;
 		if ( boid.position.x < minimum.x || boid.position.x > maximum.x || boid.position.y < minimum.y || boid.position.y > maximum.y || boid.position.z < minimum.z || boid.position.z > maximum.z ) continue;
@@ -362,7 +372,7 @@ void FlockManager::ResolveBuildingCollision( Boid& boid ) const
 
 void FlockManager::ResolveBoidCollisions()
 {
-	constexpr float contactDistance = BOID_RADIUS * 2.0f;
+	const float contactDistance = boidSize * 2.0f;
 	constexpr float restitution = 0.35f;
 	for ( size_t first = 0; first < m_boids.size(); ++first )
 	{

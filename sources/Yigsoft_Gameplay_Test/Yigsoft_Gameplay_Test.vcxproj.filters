@@ -48,6 +48,9 @@
     <ClInclude Include="Pickup_Speed.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="Pickup_Missiles.h">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
@@ -102,6 +105,9 @@
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="Pickup_Speed.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Pickup_Missiles.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">

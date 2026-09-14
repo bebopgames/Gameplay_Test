@@ -17,8 +17,9 @@ namespace
 	constexpr float PULSE_DURATION = 0.35f;
 }
 
-Pickup_Freeze::Pickup_Freeze( const Vector3& position ) :
-	Pickup( position, PICKUP_HALF_EXTENT )
+Pickup_Freeze::Pickup_Freeze( const Vector3& position, float lifetime ) :
+	Pickup( position, PICKUP_HALF_EXTENT ),
+	m_lifetime( lifetime )
 {
 	m_cubeShape = GetEngine().CreateBoxPrimitive( Vector3::One * ( PICKUP_HALF_EXTENT * 2.0f ) );
 	m_pulseShape = GetEngine().CreateSpherePrimitive( 1.0f );
