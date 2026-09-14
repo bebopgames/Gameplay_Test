@@ -1,4 +1,4 @@
 # Visual Studio user and build artifacts
-.vs/
-packages/
-x64/
+/.vs/
+/packages/
+/x64/

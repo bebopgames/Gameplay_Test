@@ -1,0 +1,15 @@
+﻿  pch.cpp
+  Camera.cpp
+  City.cpp
+  Crosshair.cpp
+  DeviceResources.cpp
+  Engine.cpp
+  FlockManager.cpp
+  Game.cpp
+  Main.cpp
+  Projectile.cpp
+  Projectile_Primary.cpp
+  RenderContext.cpp
+  Generating Code...
+     Creating library C:\Users\Geri\Downloads\GameplayTest\x64\Debug\Yigsoft_Gameplay_Test.lib and object C:\Users\Geri\Downloads\GameplayTest\x64\Debug\Yigsoft_Gameplay_Test.exp
+  Yigsoft_Gameplay_Test.vcxproj -> C:\Users\Geri\Downloads\GameplayTest\x64\Debug\Yigsoft_Gameplay_Test.exe
