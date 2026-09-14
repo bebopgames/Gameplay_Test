@@ -46,6 +46,22 @@ namespace cdp_framework
 		m_engine->m_sprites->End();
 	}
 
+	void RenderContext::RenderTextRightAligned( const std::string& text, const Vector2& position, float scale, const FXMVECTOR& color /*= Colors::White */ )
+	{
+		assert( m_engine );
+
+		const Vector2 textSize = m_engine->m_font->MeasureString( text.c_str() ) * scale;
+		RenderText( text, Vector2( position.x - textSize.x, position.y ), scale, color );
+	}
+
+	void RenderContext::RenderTextCentered( const std::string& text, const Vector2& position, float scale, const FXMVECTOR& color /*= Colors::White */ )
+	{
+		assert( m_engine );
+
+		const Vector2 textSize = m_engine->m_font->MeasureString( text.c_str() ) * scale;
+		RenderText( text, Vector2( position.x - textSize.x * 0.5f, position.y ), scale, color );
+	}
+
 	std::shared_ptr< DX::DeviceResources > RenderContext::GetDeviceRescourcesNative()
 	{
 		if( m_engine )

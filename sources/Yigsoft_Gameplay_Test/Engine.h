@@ -40,6 +40,7 @@ public:
 
 	virtual PrimitivePtr CreateBoxPrimitive( const DirectX::SimpleMath::Vector3& dimensions ) override;
 	virtual PrimitivePtr CreateSpherePrimitive( const float radius ) override;
+	virtual PrimitivePtr CreateTetrahedronPrimitive( const float size ) override;
 	virtual void RenderPrimitive ( const PrimitivePtr& primitive, const DirectX::SimpleMath::Vector3& scale, const DirectX::SimpleMath::Vector3& position,
 								   const DirectX::SimpleMath::Vector3& rotation, const DirectX::FXMVECTOR& color = DirectX::Colors::White ) override;
 

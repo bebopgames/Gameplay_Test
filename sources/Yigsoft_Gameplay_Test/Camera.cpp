@@ -11,7 +11,10 @@ namespace
 {
 	const Vector3 START_POSITION = { 0.0f, 6.0f, -10.5f };
 	constexpr float ROTATION_GAIN = 0.05f;
-	constexpr float MOVEMENT_GAIN = 0.05f;
+	// The old frame-based gain was 0.05 units at 60 Hz (3 units/second).
+	constexpr float MAX_MOVEMENT_SPEED = 6.0f;
+	constexpr float MOVEMENT_ACCELERATION = 18.0f;
+	constexpr float MOVEMENT_DECELERATION = 22.0f;
 	constexpr float CAMERA_RADIUS = 0.4f;
 	constexpr float MIN_XZ = -21.0f + CAMERA_RADIUS;
 	constexpr float MAX_XZ = 21.0f - CAMERA_RADIUS;
@@ -23,7 +26,8 @@ Camera::Camera( const City& city ) :
 	m_city( city ),
 	m_pitch( 0 ),
 	m_yaw( 0 ),
-	m_cameraPos( START_POSITION )
+	m_cameraPos( START_POSITION ),
+	m_localMovementVelocity( Vector3::Zero )
 {
 }
 
@@ -40,16 +44,28 @@ Vector3 Camera::GetForward() const
 	return Vector3( r * sinf( m_yaw ), sinf( m_pitch ), r * cosf( m_yaw ) );
 }
 
+void Camera::SetMovementSpeedMultiplier( float multiplier )
+{
+	m_movementSpeedMultiplier = std::max( 0.0f, multiplier );
+}
+
 void Camera::OnUpdate( float deltaTime, DirectX::Keyboard& keyboard, DirectX::Mouse& mouse, DirectX::GamePad& gamepad )
 {
-	UNREFERENCED_PARAMETER( deltaTime );
-
 	cdp_framework::IEngine& engine = GetEngine();
 
     mouse.SetMode( Mouse::MODE_RELATIVE );
 
 	RotationInput( mouse, gamepad );
-	Vector3 move = MovementInput( keyboard, gamepad );
+	Vector3 movementInput = MovementInput( keyboard, gamepad );
+	if ( movementInput.LengthSquared() > 1.0f )
+	{
+		movementInput.Normalize();
+	}
+
+	const Vector3 targetVelocity = movementInput * ( MAX_MOVEMENT_SPEED * m_movementSpeedMultiplier );
+	const float response = movementInput.LengthSquared() > 0.0f ? MOVEMENT_ACCELERATION : MOVEMENT_DECELERATION;
+	const float blend = std::min( response * deltaTime, 1.0f );
+	m_localMovementVelocity = Vector3::Lerp( m_localMovementVelocity, targetVelocity, blend );
 
 	const float limit = M_PI / 2.0f - 0.01f;
 	m_pitch = std::max( -limit, std::min( +limit, m_pitch ) );
@@ -64,9 +80,9 @@ void Camera::OnUpdate( float deltaTime, DirectX::Keyboard& keyboard, DirectX::Mo
 	}
 
 	Quaternion q = Quaternion::CreateFromYawPitchRoll( m_yaw, m_pitch, 0.f );
-	move = Vector3::Transform( move, q );
+	Vector3 move = Vector3::Transform( m_localMovementVelocity, q );
 	move.y *= -1.0f;
-	move *= MOVEMENT_GAIN;
+	move *= deltaTime;
 
 	m_cameraPos += move;
 	ResolveCollisions();

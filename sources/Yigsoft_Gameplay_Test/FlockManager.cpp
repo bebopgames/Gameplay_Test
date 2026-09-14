@@ -9,7 +9,7 @@
 
 namespace
 {
-	constexpr float BOID_RADIUS = 0.35f;
+	constexpr float BOID_RADIUS = 0.70f;
 	constexpr float NEIGHBOUR_RADIUS = 8.0f;
 	constexpr float SEPARATION_RADIUS = 2.25f;
 	constexpr float MIN_SPEED = 3.0f;
@@ -87,6 +87,10 @@ void FlockManager::OnUpdate( float deltaTime )
 {
 	const float timeStep = std::min( deltaTime, 0.05f );
 	if ( timeStep <= 0.0f ) return;
+	for ( Boid& boid : m_boids )
+	{
+		boid.freezeRemaining = std::max( 0.0f, boid.freezeRemaining - timeStep );
+	}
 
 	std::vector< Vector3 > accelerations( m_boids.size(), Vector3::Zero );
 	const float neighbourRadiusSquared = NEIGHBOUR_RADIUS * NEIGHBOUR_RADIUS;
@@ -94,6 +98,7 @@ void FlockManager::OnUpdate( float deltaTime )
 	for ( size_t i = 0; i < m_boids.size(); ++i )
 	{
 		const Boid& boid = m_boids[ i ];
+		if ( boid.freezeRemaining > 0.0f ) continue;
 		Vector3 averagePosition = Vector3::Zero;
 		Vector3 averageVelocity = Vector3::Zero;
 		Vector3 separation = Vector3::Zero;
@@ -123,6 +128,7 @@ void FlockManager::OnUpdate( float deltaTime )
 	for ( size_t i = 0; i < m_boids.size(); ++i )
 	{
 		Boid& boid = m_boids[ i ];
+		if ( boid.freezeRemaining > 0.0f ) continue;
 		boid.velocity += LimitMagnitude( accelerations[ i ], 12.0f ) * timeStep;
 		boid.wanderPhase += timeStep * ( 0.65f + static_cast< float >( boid.flockIndex ) * 0.08f );
 		const float speed = boid.velocity.Length();
@@ -137,6 +143,7 @@ void FlockManager::OnUpdate( float deltaTime )
 	ResolveBoidCollisions();
 	for ( Boid& boid : m_boids )
 	{
+		if ( boid.freezeRemaining > 0.0f ) continue;
 		// Pair separation can move a ball into a nearby wall, so finish with one
 		// static-world correction pass.
 		ResolveBuildingCollision( boid );
@@ -146,7 +153,11 @@ void FlockManager::OnUpdate( float deltaTime )
 
 void FlockManager::OnRender( cdp_framework::RenderContextPtr& renderContext )
 {
-	for ( const Boid& boid : m_boids ) renderContext->RenderPrimitive( m_boidShape, Vector3::One, boid.position, Vector3::Zero, Colors::Yellow );
+	for ( const Boid& boid : m_boids )
+	{
+		if ( boid.freezeRemaining > 0.0f ) renderContext->RenderPrimitive( m_boidShape, Vector3::One, boid.position, Vector3::Zero, Colors::LightBlue );
+		else renderContext->RenderPrimitive( m_boidShape, Vector3::One, boid.position, Vector3::Zero, Colors::Yellow );
+	}
 }
 
 void FlockManager::OnShutdown()
@@ -267,6 +278,37 @@ void FlockManager::BounceProjectileOffBuildings( Vector3& position, Vector3& vel
 	}
 }
 
+bool FlockManager::IntersectsBuilding( const Vector3& position, float radius ) const
+{
+	for ( const Skyscraper& skyscraper : m_city.GetSkyscrapers() )
+	{
+		const Vector3 halfSize( skyscraper.width * 0.5f + radius, skyscraper.height * 0.5f + radius, skyscraper.length * 0.5f + radius );
+		const Vector3 minimum = skyscraper.position - halfSize;
+		const Vector3 maximum = skyscraper.position + halfSize;
+		if ( position.x >= minimum.x && position.x <= maximum.x && position.y >= minimum.y && position.y <= maximum.y && position.z >= minimum.z && position.z <= maximum.z ) return true;
+	}
+	return false;
+}
+
+bool FlockManager::HasBoidWithin( const Vector3& position, float radius ) const
+{
+	const float maximumDistanceSquared = ( radius + BOID_RADIUS ) * ( radius + BOID_RADIUS );
+	for ( const Boid& boid : m_boids )
+	{
+		if ( ( boid.position - position ).LengthSquared() <= maximumDistanceSquared ) return true;
+	}
+	return false;
+}
+
+void FlockManager::FreezeBoids( const Vector3& position, float radius, float duration )
+{
+	const float radiusSquared = radius * radius;
+	for ( Boid& boid : m_boids )
+	{
+		if ( ( boid.position - position ).LengthSquared() <= radiusSquared ) boid.freezeRemaining = std::max( boid.freezeRemaining, duration );
+	}
+}
+
 Vector3 FlockManager::CalculateObstacleAvoidance( const Boid& boid ) const
 {
 	Vector3 avoidance = Vector3::Zero;
@@ -328,6 +370,7 @@ void FlockManager::ResolveBoidCollisions()
 		{
 			Boid& firstBoid = m_boids[ first ];
 			Boid& secondBoid = m_boids[ second ];
+			if ( firstBoid.freezeRemaining > 0.0f || secondBoid.freezeRemaining > 0.0f ) continue;
 			Vector3 collisionNormal = secondBoid.position - firstBoid.position;
 			const float distanceSquared = collisionNormal.LengthSquared();
 			if ( distanceSquared >= contactDistance * contactDistance ) continue;

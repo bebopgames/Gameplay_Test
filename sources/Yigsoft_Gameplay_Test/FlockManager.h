@@ -22,6 +22,9 @@ public:
 	void ScatterYellowBalls( const Vector3& threatPosition, float scatterDistance );
 	void AddToNearestFlock( const Vector3& position, const Vector3& velocity );
 	void BounceProjectileOffBuildings( Vector3& position, Vector3& velocity, float radius ) const;
+	bool IntersectsBuilding( const Vector3& position, float radius ) const;
+	bool HasBoidWithin( const Vector3& position, float radius ) const;
+	void FreezeBoids( const Vector3& position, float radius, float duration );
 
 	// Tunable flock parameters. Each flock receives a random integer size in
 	// the inclusive [minimumFlockSize, maximumFlockSize] range on initialization.
@@ -39,6 +42,7 @@ private:
 		Vector3 velocity;
 		float cruiseSpeed;
 		float wanderPhase;
+		float freezeRemaining = 0.0f;
 		size_t flockIndex;
 	};
 

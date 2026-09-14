@@ -337,6 +337,11 @@ namespace cdp_framework
 		return DirectX::GeometricPrimitive::CreateSphere( m_deviceResources->GetD3DDeviceContext(), radius );
 	}
 
+	std::unique_ptr< DirectX::GeometricPrimitive > Engine::CreateTetrahedronPrimitive( const float size )
+	{
+		return DirectX::GeometricPrimitive::CreateTetrahedron( m_deviceResources->GetD3DDeviceContext(), size );
+	}
+
 	void Engine::RenderPrimitive( const PrimitivePtr& primitive, const DirectX::SimpleMath::Vector3& scale, const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Vector3& rotation, const FXMVECTOR& color )
 	{
 		XMVECTOR orientation = Quaternion::CreateFromYawPitchRoll( rotation.x, rotation.y, rotation.z );
@@ -495,7 +500,7 @@ namespace cdp_framework
 			fovAngleY,
 			aspectRatio,
 			0.01f,
-			100.0f
+		100.0f
 		);
 
 		m_batchEffect->SetProjection( m_projection );

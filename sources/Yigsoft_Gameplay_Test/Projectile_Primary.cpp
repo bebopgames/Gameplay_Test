@@ -6,6 +6,7 @@
 #include "Projectile_Primary.h"
 #include "Engine.h"
 #include "FlockManager.h"
+#include "Pickup.h"
 
 namespace
 {
@@ -14,6 +15,7 @@ namespace
 	constexpr float PURSUIT_ACCELERATION = 3.0f;
 	constexpr float ENERGY_DRAIN_PER_SECOND = 1.5f;
 	constexpr float ENERGY_PER_CONSUMED_BOID = 1.0f;
+	constexpr int SCORE_PER_CONSUMED_BOID = 10;
 	constexpr float CONSUME_DISTANCE = PROJECTILE_RADIUS + 0.35f;
 	constexpr float MIN_XZ = -21.0f;
 	constexpr float MAX_XZ = 21.0f;
@@ -21,18 +23,28 @@ namespace
 	constexpr float MAX_Y = 25.0f;
 }
 
-Projectile_Primary::Projectile_Primary( const Vector3& position, const Vector3& direction ) :
-	Projectile( position, direction * INITIAL_SPEED )
+Projectile_Primary::Projectile_Primary( const Vector3& position, const Vector3& direction, float speedMultiplier ) :
+	Projectile( position, direction * INITIAL_SPEED * speedMultiplier )
 {
+	m_speedMultiplier = speedMultiplier;
 	m_shape = GetEngine().CreateSpherePrimitive( PROJECTILE_RADIUS );
 }
 
 Projectile_Primary::~Projectile_Primary() = default;
 
-void Projectile_Primary::OnUpdate( float deltaTime, FlockManager& flockManager )
+void Projectile_Primary::SetSpeedMultiplier( float multiplier )
+{
+	const float clampedMultiplier = std::max( 0.0f, multiplier );
+	if ( m_speedMultiplier > 0.0f ) m_velocity *= clampedMultiplier / m_speedMultiplier;
+	m_speedMultiplier = clampedMultiplier;
+}
+
+int Projectile_Primary::OnUpdate( float deltaTime, FlockManager& flockManager, Pickup* pickup )
 {
 	const float timeStep = std::min( deltaTime, 0.05f );
-	if ( timeStep <= 0.0f || !m_isActive ) return;
+	if ( timeStep <= 0.0f || !m_isActive ) return 0;
+
+	int scoreEarned = 0;
 
 	Vector3 targetPosition;
 	if ( flockManager.FindClosestYellowBall( m_position, targetPosition ) )
@@ -51,10 +63,12 @@ void Projectile_Primary::OnUpdate( float deltaTime, FlockManager& flockManager )
 	m_position += m_velocity * timeStep;
 	BounceOffWorldBounds();
 	flockManager.BounceProjectileOffBuildings( m_position, m_velocity, PROJECTILE_RADIUS );
+	if ( pickup ) m_pendingPickupEffect = pickup->TryActivate( m_position, PROJECTILE_RADIUS, flockManager );
 
 	if ( flockManager.ConsumeYellowBall( m_position, CONSUME_DISTANCE ) )
 	{
 		m_energy += ENERGY_PER_CONSUMED_BOID;
+		scoreEarned += SCORE_PER_CONSUMED_BOID;
 	}
 
 	if ( m_energy <= 0.0f )
@@ -62,6 +76,8 @@ void Projectile_Primary::OnUpdate( float deltaTime, FlockManager& flockManager )
 		flockManager.AddToNearestFlock( m_position, m_velocity );
 		m_isActive = false;
 	}
+
+	return scoreEarned;
 }
 
 void Projectile_Primary::OnRender( cdp_framework::RenderContextPtr& renderContext )

@@ -15,6 +15,7 @@ public:
 	void OnUpdate( float deltaTime, DirectX::Keyboard& keyboard, DirectX::Mouse& mouse, DirectX::GamePad& gamepad );
 	Vector3 GetPosition() const;
 	Vector3 GetForward() const;
+	void SetMovementSpeedMultiplier( float multiplier );
 
 private:
 	void RotationInput( DirectX::Mouse& mouse, DirectX::GamePad& gamepad );
@@ -23,8 +24,10 @@ private:
 
 	const City& m_city;
 	Vector3 m_cameraPos;
+	Vector3 m_localMovementVelocity;
 	float m_pitch;
 	float m_yaw;
+	float m_movementSpeedMultiplier = 1.0f;
 
 };
 

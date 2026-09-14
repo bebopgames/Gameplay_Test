@@ -29,6 +29,8 @@ namespace cdp_framework
 		virtual void RenderModel( const ModelPtr& model, const Vector3& scale, const Vector3& position, const Vector3& rotation ) override;
 
 		virtual void RenderText( const std::string& text, const Vector2& position, float scale, const FXMVECTOR& color = Colors::White ) override;
+		virtual void RenderTextRightAligned( const std::string& text, const Vector2& position, float scale, const FXMVECTOR& color = Colors::White ) override;
+		virtual void RenderTextCentered( const std::string& text, const Vector2& position, float scale, const FXMVECTOR& color = Colors::White ) override;
 
 		virtual std::shared_ptr< DX::DeviceResources > GetDeviceRescourcesNative() override;
 

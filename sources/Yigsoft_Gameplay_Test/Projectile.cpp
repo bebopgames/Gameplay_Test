@@ -17,3 +17,10 @@ bool Projectile::IsActive() const
 {
 	return m_isActive;
 }
+
+PickupEffect Projectile::TakePickupEffect()
+{
+	const PickupEffect effect = m_pendingPickupEffect;
+	m_pendingPickupEffect = PickupEffect::None;
+	return effect;
+}

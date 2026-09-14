@@ -36,6 +36,18 @@
     <ClInclude Include="Projectile_Primary.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="Projectile_Secondary.h">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickup.h">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickup_Freeze.h">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickup_Speed.h">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Gameplay</Filter>
     </ClInclude>
@@ -78,6 +90,18 @@
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="Projectile_Primary.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile_Secondary.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Pickup.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Pickup_Freeze.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Pickup_Speed.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
