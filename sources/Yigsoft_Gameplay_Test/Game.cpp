@@ -1,0 +1,83 @@
+/**
+* Copyright (c) 2022 Yigsoft. All Rights Reserved.
+*/
+
+#include "pch.h"
+#include "Game.h"
+#include "Engine.h"
+
+Game::Game()
+{
+    m_city = std::make_unique< City >();
+    m_camera = std::make_unique< Camera >( *m_city );
+    m_crosshair = std::make_unique< Crosshair >();
+	m_flockManager = std::make_unique< FlockManager >( *m_city );
+}
+
+Game::~Game() = default;
+
+void Game::OnInitialize()
+{
+    m_city->OnInitialize();
+	m_flockManager->OnInitialize();
+    m_crosshair->OnInitialize();
+
+	// Your code here
+
+
+}
+
+void Game::OnUpdate( float deltaTime, DirectX::Keyboard& keyboard, DirectX::Mouse& mouse, DirectX::GamePad& gamepad )
+{
+	m_camera->OnUpdate( deltaTime, keyboard, mouse, gamepad );
+	m_city->OnUpdate( deltaTime );
+	m_flockManager->OnUpdate( deltaTime );
+
+	const auto mouseState = mouse.GetState();
+	if ( mouseState.leftButton && !m_leftMouseWasDown )
+	{
+		const Vector3 direction = m_camera->GetForward();
+		m_projectiles.push_back( std::make_unique< Projectile_Primary >( m_camera->GetPosition() + direction, direction ) );
+	}
+	m_leftMouseWasDown = mouseState.leftButton;
+
+	for ( const auto& projectile : m_projectiles )
+	{
+		projectile->OnUpdate( deltaTime, *m_flockManager );
+	}
+	m_projectiles.erase( std::remove_if( m_projectiles.begin(), m_projectiles.end(), []( const std::unique_ptr< Projectile >& projectile ) { return !projectile->IsActive(); } ), m_projectiles.end() );
+    m_crosshair->OnUpdate( deltaTime, mouse, gamepad );
+
+	// Your code here
+
+
+}
+
+void Game::OnRender( cdp_framework::RenderContextPtr& renderContext )
+{
+	m_city->OnRender( renderContext );
+	m_flockManager->OnRender( renderContext );
+	for ( const auto& projectile : m_projectiles )
+	{
+		projectile->OnRender( renderContext );
+	}
+    m_crosshair->OnRender( renderContext );
+    Vector2 windowSize = GetEngine().GetWindowSize();
+	renderContext->RenderText( "CD Projekt RED Gameplay Test", Vector2( 10, ( windowSize.y - 40 ) ), 1, Colors::DarkRed );
+
+	// Your code here
+
+
+}
+
+void Game::OnShutdown()
+{
+	m_city->OnShutdown();
+	m_flockManager->OnShutdown();
+	m_projectiles.clear();
+    m_crosshair->OnShutdown();
+
+	// Your code here
+
+
+}
